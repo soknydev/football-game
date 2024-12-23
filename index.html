@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #28a745;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="footballGame"></canvas>
+
+    <script>
+        const canvas = document.getElementById('footballGame');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas dimensions to fit the screen
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Game elements
+        const player = {
+            x: canvas.width / 2 - 75,
+            y: canvas.height - 70,
+            width: 150, // Longer player width at level 1
+            height: 10,
+            color: 'blue',
+            speed: 7,
+            dx: 0
+        };
+
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 15,
+            color: 'white',
+            dx: 4,
+            dy: -4
+        };
+
+        const goal = {
+            x: canvas.width / 2 - 100,
+            y: 10,
+            width: 200,
+            height: 10,
+            color: 'yellow'
+        };
+
+        let score = 0;
+        let level = 1;
+
+        // Draw player
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        // Draw ball
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw goal
+        function drawGoal() {
+            ctx.fillStyle = goal.color;
+            ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+        }
+
+        // Draw score and level
+        function drawScoreAndLevel() {
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+            ctx.fillText(`Level: ${level}`, 10, 60);
+        }
+
+        // Update ball position
+        function updateBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Ball collision with walls
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.dx *= -1;
+            }
+            if (ball.y - ball.radius < 0) {
+                ball.dy *= -1;
+            }
+
+            // Ball collision with player
+            if (
+                ball.x > player.x &&
+                ball.x < player.x + player.width &&
+                ball.y + ball.radius > player.y &&
+                ball.y - ball.radius < player.y + player.height
+            ) {
+                ball.dy *= -1;
+                ball.y = player.y - ball.radius; // Prevent ball sticking
+            }
+
+            // Ball enters goal
+            if (
+                ball.x > goal.x &&
+                ball.x < goal.x + goal.width &&
+                ball.y - ball.radius < goal.y + goal.height
+            ) {
+                score++;
+                if (score % 10 === 0) {
+                    levelUp();
+                }
+                resetBall();
+            }
+
+            // Ball out of bounds
+            if (ball.y + ball.radius > canvas.height) {
+                restartGame();
+            }
+        }
+
+        // Reset ball position
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx = (Math.random() * 4 + 3) * (Math.random() > 0.5 ? 1 : -1);
+            ball.dy = -4;
+        }
+
+        // Move player
+        function movePlayer() {
+            player.x += player.dx;
+
+
+            // Prevent player from going out of bounds
+            if (player.x < 0) {
+                player.x = 0;
+            } else if (player.x + player.width > canvas.width) {
+                player.x = canvas.width - player.width;
+            }
+        }
+
+        // Handle keyboard input
+        function keyDown(e) {
+            if (e.key === 'ArrowRight') {
+                player.dx = player.speed;
+            } else if (e.key === 'ArrowLeft') {
+                player.dx = -player.speed;
+            }
+        }
+
+        function keyUp(e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                player.dx = 0;
+            }
+        }
+
+        document.addEventListener('keydown', keyDown);
+        document.addEventListener('keyup', keyUp);
+
+        // Level up function
+        function levelUp() {
+            level++;
+            player.width = Math.max(player.width - 15, 50); // Reduce player width but not below 50
+            ball.dx *= 1.1; // Increase ball speed
+            ball.dy *= 1.1;
+        }
+
+        // Restart game
+        function restartGame() {
+            alert('Game Over! Your score: ' + score);
+            score = 0;
+            level = 1;
+            player.width = 150; // Reset player width to initial value
+            resetBall();
+        }
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawBall();
+            drawGoal();
+            drawScoreAndLevel();
+            movePlayer();
+            updateBall();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
