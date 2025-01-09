@@ -1,8 +1,8 @@
 # Use the official Nginx image as the base image
 FROM nginx:alpine
 
-# Copy the HTML files to the Nginx web server's root directory
-COPY public/ /usr/share/nginx/html
+# Copy the HTML file to the Nginx web server's root directory
+COPY index.html /usr/share/nginx/html/index.html
 
 # Expose port 80 for the web server
 EXPOSE 80
