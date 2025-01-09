@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  web:
+    image: football-game-ui:latest # Specify the name for the image
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8090:80" # Map port 8080 on the host to port 80 in the container
+    volumes:
+      - ./public:/usr/share/nginx/html # Bind the local directory to the container
+    restart: always
